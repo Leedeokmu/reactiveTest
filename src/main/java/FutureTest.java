@@ -1,7 +1,4 @@
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class FutureTest {
     public static void main(String[] args)  {
@@ -36,15 +33,15 @@ public class FutureTest {
 }
 
 class SquareCalculator {
-    private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+    private ScheduledExecutorService executor =  Executors.newScheduledThreadPool(2);
     public Future<Integer> calculate(Integer input) {
         return executor.submit(() -> {
             System.out.printf("calculating square for: %d\n", input);
-            TimeUnit.MILLISECONDS.sleep(2000);
+            TimeUnit.MILLISECONDS.sleep(1000);
             return input * input;
         });
     }
-    public ThreadPoolExecutor getExecutor(){
+    public ScheduledExecutorService getExecutor(){
         return executor;
     }
 }
