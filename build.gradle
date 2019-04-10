@@ -1,34 +1,106 @@
-plugins {
-    id 'java'
-}
-
 group 'reactive.test'
 version '1.0.0'
+buildscript {
+    ext {
+        springBootVersion = '2.1.0.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath('io.spring.gradle:dependency-management-plugin:0.5.2.RELEASE')
+        classpath("org.springframework:springloaded:1.2.6.RELEASE")
+    }
+}
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+springBoot {
+    buildInfo()
+}
+
+bootWar {
+    archiveName = "coffeekong-min.war"
+}
 
 repositories {
     mavenCentral()
+}
+
+project.ext{
+    springSessionVersion = '1.1.1.RELEASE'
+}
+
+final String DEFAULT_PROFILE = 'dev'
+if(!project.hasProperty('profile') || !profile){
+    ext.profile = DEFAULT_PROFILE
 }
 
 sourceSets{
     main{
         resources{
             srcDirs = [
+                    "src/main/resources-${profile}",
                     "src/main/resources",
+                    "src/main/webapp"
             ]
         }
     }
     test{
         resources{
             srcDirs = [
-                    "src/main/resources",
+                    "src/main/resources-${profile}",
+                    "src/test/resources",
+                    "src/test/webapp"
             ]
         }
     }
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    
-    
-    
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+//    testCompile('io.projectreactor.addons:reactor-test')
+    // spring boot essentials
+    compile('org.springframework.boot:spring-boot-starter-webflux')
+//    compile('org.springframework.boot:spring-boot-starter-web')
+//    compile("org.springframework.boot:spring-boot-starter-aop")
+//	compile("org.springframework.boot:spring-boot-starter-jdbc")
+//    compile('org.springframework.boot:spring-boot-starter-tomcat')
+//    compile('org.springframework.boot:spring-boot-starter-json')
+    compile('org.springframework.boot:spring-boot-starter-data-jpa')
+//    compile('org.springframework.boot:spring-boot-starter-actuator')
+//    compile('org.springframework.boot:spring-boot-devtools')
+    compile('com.h2database:h2:1.4.195')
+    compile('io.projectreactor:reactor-bus:2.0.7.RELEASE')
+
+//    // session
+//    compile("org.springframework.session:spring-session:${springSessionVersion}")
+//
+//    // validator
+//    compile('javax.validation:validation-api:1.1.0.Final')
+//    compile('org.hibernate:hibernate-validator:5.2.4.Final')
+//
+//    // commons library
+//    compile 'commons-collections:commons-collections:3.2'
+    compile 'org.apache.commons:commons-lang3:3.0'
+//    compile 'commons-io:commons-io:2.4'
+//
+    // lombok
+    compile 'org.projectlombok:lombok:1.18.4'
+//
+    // mysql connector
+//    compile 'mysql:mysql-connector-java:5.1.36'
+//
+//    // jsp
+//    compile group: 'javax.servlet.jsp', name: 'javax.servlet.jsp-api', version: '2.3.1'
+//    compile 'javax.servlet:jstl:1.2'
+////	compile 'javax.servlet:javax.servlet-api:3.1.0'
+//    // jsp tomcat engine
+//    compile 'org.apache.tomcat.embed:tomcat-embed-jasper'
+//
+//    // json
+//    compile group: 'org.json', name: 'json', version: '20160212'
 }

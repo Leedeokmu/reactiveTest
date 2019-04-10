@@ -34,6 +34,7 @@ public class FutureTest {
 
 class SquareCalculator {
     private ScheduledExecutorService executor =  Executors.newScheduledThreadPool(2);
+
     public Future<Integer> calculate(Integer input) {
         return executor.submit(() -> {
             System.out.printf("calculating square for: %d\n", input);

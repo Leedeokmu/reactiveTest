@@ -1,8 +1,4 @@
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CompletableFutureTest {
     public static void main(String[] args) throws InterruptedException, ExecutionException {
@@ -36,6 +32,7 @@ public class CompletableFutureTest {
 
         CompletableFuture<Void> combinedFuture
                 = CompletableFuture.allOf(future1, future2, future3);
+
 
 
 //        String combined = Stream.of(future1, future2, future3)
