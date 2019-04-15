@@ -1,80 +1,43 @@
-group 'reactive.test'
-version '1.0.0'
-buildscript {
-    ext {
-        springBootVersion = '2.1.0.RELEASE'
-    }
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath('io.spring.gradle:dependency-management-plugin:0.5.2.RELEASE')
-        classpath("org.springframework:springloaded:1.2.6.RELEASE")
-    }
+plugins {
+    id 'org.springframework.boot' version '2.1.0.RELEASE'
+    id 'java'
+    id 'war'
 }
-apply plugin: 'java'
-apply plugin: 'war'
-apply plugin: 'org.springframework.boot'
+
 apply plugin: 'io.spring.dependency-management'
+
+group = 'reactive.test'
+version = '1.0.0'
+sourceCompatibility = '11'
 
 springBoot {
     buildInfo()
 }
-
-bootWar {
-    archiveName = "coffeekong-min.war"
-}
-
 repositories {
     mavenCentral()
 }
-
-project.ext{
-    springSessionVersion = '1.1.1.RELEASE'
-}
-
-final String DEFAULT_PROFILE = 'dev'
-if(!project.hasProperty('profile') || !profile){
-    ext.profile = DEFAULT_PROFILE
-}
-
-sourceSets{
-    main{
-        resources{
-            srcDirs = [
-                    "src/main/resources-${profile}",
-                    "src/main/resources",
-                    "src/main/webapp"
-            ]
-        }
-    }
-    test{
-        resources{
-            srcDirs = [
-                    "src/main/resources-${profile}",
-                    "src/test/resources",
-                    "src/test/webapp"
-            ]
-        }
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
     }
 }
 
 dependencies {
-    testCompile('org.springframework.boot:spring-boot-starter-test')
-//    testCompile('io.projectreactor.addons:reactor-test')
-    // spring boot essentials
-    compile('org.springframework.boot:spring-boot-starter-webflux')
-//    compile('org.springframework.boot:spring-boot-starter-web')
-//    compile("org.springframework.boot:spring-boot-starter-aop")
-//	compile("org.springframework.boot:spring-boot-starter-jdbc")
-//    compile('org.springframework.boot:spring-boot-starter-tomcat')
-//    compile('org.springframework.boot:spring-boot-starter-json')
-    compile('org.springframework.boot:spring-boot-starter-data-jpa')
-//    compile('org.springframework.boot:spring-boot-starter-actuator')
-//    compile('org.springframework.boot:spring-boot-devtools')
-    compile('com.h2database:h2:1.4.195')
-    compile('io.projectreactor:reactor-bus:2.0.7.RELEASE')
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test'
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+    implementation('de.flapdoodle.embed:de.flapdoodle.embed.mongo')
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation('org.synchronoss.cloud:nio-multipart-parser')
+
+    runtimeOnly 'org.springframework.boot:spring-boot-devtools'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    implementation 'org.apache.commons:commons-lang3:3.0'
 
 //    // session
 //    compile("org.springframework.session:spring-session:${springSessionVersion}")
@@ -85,11 +48,7 @@ dependencies {
 //
 //    // commons library
 //    compile 'commons-collections:commons-collections:3.2'
-    compile 'org.apache.commons:commons-lang3:3.0'
 //    compile 'commons-io:commons-io:2.4'
-//
-    // lombok
-    compile 'org.projectlombok:lombok:1.18.4'
 //
     // mysql connector
 //    compile 'mysql:mysql-connector-java:5.1.36'

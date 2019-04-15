@@ -2,20 +2,21 @@ import com.freeefly.webflux.model.Vehicle;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.bus.Event;
 import reactor.core.Disposable;
-import reactor.core.publisher.ConnectableFlux;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxProcessor;
+import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import static reactor.bus.selector.Selectors.$;
+import reactor.test.StepVerifier;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -59,17 +60,18 @@ public class MonoFluxTest {
 //
 //        publish.subscribe(System.out::println);
 //        publish.connect();
-
+        Hooks.onOperatorDebug();
+         
         final List<String> basket1 = Arrays.asList(new String[]{"kiwi", "orange", "lemon", "orange", "lemon", "kiwi"});
         final List<String> basket2 = Arrays.asList(new String[]{"banana", "lemon", "lemon", "kiwi"});
         final List<String> basket3 = Arrays.asList(new String[]{"strawberry", "orange", "lemon", "grape", "strawberry"});
         final List<List<String>> baskets = Arrays.asList(basket1, basket2, basket3);
         final Flux<List<String>> basketFlux = Flux.fromIterable(baskets);
 
-        ConnectableFlux<FruitInfo> connectableFlux = basketFlux.flatMapSequential(basket -> {
-            final Mono<List<String>> distinctFruits = Flux.fromIterable(basket).distinct().collectList().log().subscribeOn(Schedulers.elastic());
-            final Mono<Map<String, Long>> countOfFruits = Flux.fromIterable(basket)
-
+        basketFlux.flatMapSequential(basket -> {
+            final Flux<String> soruce = Flux.fromIterable(basket).publishOn(Schedulers.parallel()).log().publish().autoConnect(2);
+            final Mono<List<String>> distinctFruits = soruce.distinct().collectList().log();
+            final Mono<Map<String, Long>> countOfFruits = soruce
                     .groupBy(fruit -> fruit)
                     .concatMap(groupedFlux -> groupedFlux.count()
                             .map(count -> {
@@ -83,43 +85,13 @@ public class MonoFluxTest {
                         putAll(accumulatedMap);
                         putAll(currentMap);
                     }})
-                    .log()
-                    .subscribeOn(Schedulers.elastic());
+                    .log().subscribeOn(Schedulers.parallel())
+                    /*.subscribeOn(Schedulers.parallel())*/;
             return Flux.zip(distinctFruits, countOfFruits, (distinct, count) -> new FruitInfo(distinct, count));
-        })
-                .subscribeOn(Schedulers.elastic())
-                .log()
-                .publish();
-
-        connectableFlux
-            .subscribe(
-                    System.out::println,
-                    error -> {
-                        log.error(error.getMessage());
-                    },
-                    () -> {
-                        log.info("subscriber1 complete");
-                    }
-            );
-        connectableFlux
-            .subscribe(
-                    System.out::println,
-                    error -> {
-                        log.error(error.getMessage());
-                    },
-                    () -> {
-                        log.info("subscriber2 complete");
-                    }
-            );
-
-        connectableFlux.connect();
+        }).subscribe();
 
         TimeUnit.SECONDS.sleep(2);
-
     }
-
-
-
 
 }
 
